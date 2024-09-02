@@ -2,22 +2,28 @@ import streamlit as st
 import pandas as pd
 from io import StringIO
 
+st.set_page_config(page_title='CSV File Reader', layout='wide')
+st.header('File Upload')
+
 uploaded_file = st.file_uploader("Choose a file")
 
-if uploaded_file is not None:
-    # To read file as bytes:
-    bytes_data = uploaded_file.getvalue()
+def extract(file_to_extract):
+    if file_to_extract.name.split(".")[-1] == "csv": 
+        extracted_data = pd.read_csv(file_to_extract)
 
-    # To convert to a string based IO:
-    stringio = StringIO(uploaded_file.getvalue().decode("utf-8"))
+    elif file_to_extract.name.split(".")[-1] == 'json':
+         extracted_data = pd.read_json(file_to_extract, lines=True)
 
-    # To read file as string:
-    string_data = stringio.read()
+    elif file_to_extract.name.split(".")[-1] == 'xml':
+         extracted_data = pd.read_xml(file_to_extract)
+         
+    return extracted_data
 
-    # Can be used wherever a "file-like" object is accepted:
-    dataframe = pd.read_csv(uploaded_file)
- 
+# create an empty list which will be used to merge the files.
+
+df =  extract(uploaded_file)
+
 if 'df' not in st.session_state:
-    st.session_state['df'] = dataframe
+    st.session_state['df'] = df
 
-st.write("Done")
+st.dataframe(df, width=1800, height=1200)
